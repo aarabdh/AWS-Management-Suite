@@ -38,7 +38,6 @@ def untagged_instances(instances) -> dict:
             for tag in req_tags:
                 if tag not in instance_tags:
                     untagged_instances[instance['InstanceId']].append(tag)
-                    break
         except:
             untagged_instances[instance['InstanceId']] = req_tags
     return untagged_instances
