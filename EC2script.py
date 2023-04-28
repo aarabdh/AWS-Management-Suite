@@ -1,6 +1,7 @@
 import boto3
 from collections import defaultdict 
 from typing import * 
+import os
 
 # Prompt the user for AWS credentials
 def get_aws_credentials():
@@ -42,6 +43,16 @@ def untagged_instances(instances) -> dict:
             untagged_instances[instance['InstanceId']] = req_tags
     return untagged_instances
 
+def writing_to_csv(untagged_buckets):
+    if not os.path.exists('out'):
+        os.makedirs('out')
+    with open('out/untagged_EC2.csv', 'w') as f:
+        f.write("EC2 Instance ID, Untagged Tags\n")
+        for key in untagged_buckets.keys():
+            x = untagged_buckets[key]
+            y = ','.join(i for i in x)
+            f.write("%s, %s\n"%(key,y))
+
 # Driver code
 def main():
     access_key_id, secret_access_key = get_aws_credentials()
@@ -49,10 +60,7 @@ def main():
     response = get_ec2_instances(ec2)
     instances = get_ec2_instance_info(response)
     untagged_instances_ = untagged_instances(instances)
-    print("Number of untagged instances: ", len(untagged_instances_), "\n")
-    print("List of untagged instances: ")
-    for key, value in untagged_instances_.items():
-        print(f"instanceID = {key} and tags missing = {value}")
+    writing_to_csv(untagged_instances_)
 
 if __name__ == "__main__":
     main()
