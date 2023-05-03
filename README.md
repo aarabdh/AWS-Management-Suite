@@ -12,6 +12,12 @@ Similarly, this code will get you all S3 buckets and their associated tags. It u
 
 The response will be saved in a CSV file in ./out directory.
 
+## S3 Script
+
+This script will get you all Relational Database instances (RDS) and their associated tags. It uses multithreading to speed up the process.
+
+The response will be saved in a CSV file in ./out directory.
+
 ## Dependencies
 
 ```pip install boto3```
