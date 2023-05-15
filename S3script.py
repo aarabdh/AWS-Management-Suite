@@ -2,8 +2,6 @@ import boto3
 from collections import defaultdict 
 from typing import *
 import threading
-import os
-from tqdm import tqdm
 
 
 # get the AWS credentials
@@ -56,15 +54,15 @@ def get_s3_bucket_info(buckets, s3):
 
     def task3():
         i = 2
-        x = (len(buckets) - i)%3-1
-        pbar = tqdm(total = len(buckets)-x, desc='Processing Bucket Tags')
+        # x = (len(buckets) - i)%3-1
+        # pbar = tqdm(total = len(buckets)-x, desc='Processing Bucket Tags')
         while(i<len(buckets)):
             # print(i, "task3")
             y = get_bucket_tags(s3, buckets[i]['Name'])
             bucket_tags[buckets[i]['Name']] = y
             i+=3
-            pbar.update(3)
-        pbar.close()
+            # pbar.update(3)
+        # pbar.close()
         
         
     t1 = threading.Thread(target=task1, name='t1')
@@ -92,10 +90,8 @@ def untagged_buckets(bucket_tags):
         untagged_buckets[key] = req_tags
     return untagged_buckets
 
-def writing_to_csv(untagged_buckets):
-    if not os.path.exists('out'):
-        os.makedirs('out')
-    with open('out/untagged_S3.csv', 'w') as f:
+def writing_to_csv(untagged_buckets, path):
+    with open(path + '/untagged_S3.csv', 'w') as f:
         f.write("S3 Bucket Name, Untagged Tags\n")
         for key in untagged_buckets.keys():
             x = untagged_buckets[key]
@@ -103,13 +99,13 @@ def writing_to_csv(untagged_buckets):
             f.write("%s, %s\n"%(key,y))
 
 # main function
-def main():
-    access_key_id, secret_access_key = get_aws_credentials()
+def main(access_key_id, secret_access_key, path):
+    # access_key_id, secret_access_key = get_aws_credentials()
     s3 = get_s3_client(access_key_id, secret_access_key)
     buckets = get_s3_buckets(s3)
     bucket_tags = get_s3_bucket_info(buckets, s3)
     untagged_buckets_ = untagged_buckets(bucket_tags)
-    writing_to_csv(untagged_buckets_)
+    writing_to_csv(untagged_buckets_, path)
 
 if __name__ == "__main__":
     main()

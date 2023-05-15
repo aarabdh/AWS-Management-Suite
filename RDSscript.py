@@ -2,7 +2,6 @@ import boto3
 from collections import defaultdict
 from typing import *
 import threading
-import os
 
 # Prompt the user for AWS credentials
 def get_aws_credentials():
@@ -90,23 +89,21 @@ def untagged_rds_instances(rds_tags):
         untagged_instances[key] = req_tags
     return untagged_instances
 
-def writing_to_csv(untagged_instances):
-    if not os.path.exists('out'):
-        os.makedirs('out')
-    with open('out/untagged_RDS.csv', 'w') as f:
+def writing_to_csv(untagged_instances, path):
+    with open(path + '/untagged_RDS.csv', 'w') as f:
         f.write("S3 Bucket Name, Untagged Tags\n")
         for key in untagged_instances.keys():
             x = untagged_instances[key]
             y = ','.join(i for i in x)
             f.write("%s, %s\n"%(key,y))
 
-def main():
-    access_key_id, secret_access_key, account_id = get_aws_credentials()
+def main(access_key_id, secret_access_key, account_id, path):
+    # access_key_id, secret_access_key, account_id = get_aws_credentials()
     rds = get_rds_client(access_key_id, secret_access_key)
     response = get_rds_instances(rds)
     rds_tags = get_rds_instance_info(rds, response, account_id)
     untagged_instances = untagged_rds_instances(rds_tags)
-    writing_to_csv(untagged_instances)
+    writing_to_csv(untagged_instances, path)
 
 if __name__ == "__main__":
     main()

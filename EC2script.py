@@ -1,7 +1,6 @@
 import boto3
 from collections import defaultdict 
-from typing import * 
-import os
+from typing import *
 
 # Prompt the user for AWS credentials
 def get_aws_credentials():
@@ -43,10 +42,8 @@ def untagged_instances(instances) -> dict:
             untagged_instances[instance['InstanceId']] = req_tags
     return untagged_instances
 
-def writing_to_csv(untagged_buckets):
-    if not os.path.exists('out'):
-        os.makedirs('out')
-    with open('out/untagged_EC2.csv', 'w') as f:
+def writing_to_csv(untagged_buckets, path):
+    with open(path + '/untagged_EC2.csv', 'w') as f:
         f.write("EC2 Instance ID, Untagged Tags\n")
         for key in untagged_buckets.keys():
             x = untagged_buckets[key]
@@ -54,13 +51,13 @@ def writing_to_csv(untagged_buckets):
             f.write("%s, %s\n"%(key,y))
 
 # Driver code
-def main():
-    access_key_id, secret_access_key = get_aws_credentials()
+def main(access_key_id, secret_access_key, path):
+    # access_key_id, secret_access_key = get_aws_credentials()
     ec2 = get_ec2_client(access_key_id, secret_access_key)
     response = get_ec2_instances(ec2)
     instances = get_ec2_instance_info(response)
     untagged_instances_ = untagged_instances(instances)
-    writing_to_csv(untagged_instances_)
+    writing_to_csv(untagged_instances_, path=path)
 
 if __name__ == "__main__":
     main()
