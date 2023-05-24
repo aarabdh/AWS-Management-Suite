@@ -18,6 +18,12 @@ This script will get you all Relational Database instances (RDS) and their assoc
 
 The response will be saved in a CSV file in ./out directory.
 
+## Lambda Script
+
+This script will get you all Lambda Functions and their associated tags. It uses multithreading to speed up the process.
+
+The response will be saved in a CSV file in ./out directory.
+
 ## UI script
 
 This will create a convevient UI for you to do the same. It stores the data entered the 1st time, so it can be entered again hassle-free.
