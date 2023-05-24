@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtWidgets
 import EC2script
 import S3script
 import RDSscript
+import LambdaScript
 import sys
 import os
 
@@ -10,19 +11,19 @@ class Ui_Dialog(object):
         Dialog.setObjectName("Dialog")
         Dialog.resize(413, 496)
         self.listWidget = QtWidgets.QListWidget(Dialog)
-        self.listWidget.setGeometry(QtCore.QRect(50, 60, 311, 141))
+        self.listWidget.setGeometry(QtCore.QRect(40, 50, 311, 151))
         self.listWidget.setObjectName("listWidget")
         self.EC2check = QtWidgets.QCheckBox(Dialog)
-        self.EC2check.setGeometry(QtCore.QRect(60, 110, 111, 17))
+        self.EC2check.setGeometry(QtCore.QRect(60, 80, 111, 17))
         self.EC2check.setObjectName("EC2check")
         self.S3check = QtWidgets.QCheckBox(Dialog)
-        self.S3check.setGeometry(QtCore.QRect(60, 140, 101, 17))
+        self.S3check.setGeometry(QtCore.QRect(60, 110, 101, 17))
         self.S3check.setObjectName("S3check")
         self.RDScheck = QtWidgets.QCheckBox(Dialog)
-        self.RDScheck.setGeometry(QtCore.QRect(60, 170, 111, 17))
+        self.RDScheck.setGeometry(QtCore.QRect(60, 140, 111, 17))
         self.RDScheck.setObjectName("RDScheck")
         self.label = QtWidgets.QLabel(Dialog)
-        self.label.setGeometry(QtCore.QRect(60, 70, 271, 31))
+        self.label.setGeometry(QtCore.QRect(60, 50, 271, 31))
         self.label.setObjectName("label")
         self.AccessID = QtWidgets.QLineEdit(Dialog)
         self.AccessID.setGeometry(QtCore.QRect(130, 220, 231, 20))
@@ -55,6 +56,9 @@ class Ui_Dialog(object):
         self.run = QtWidgets.QPushButton(Dialog)
         self.run.setGeometry(QtCore.QRect(320, 460, 75, 23))
         self.run.setObjectName("run")
+        self.LambdaCheck = QtWidgets.QCheckBox(Dialog)
+        self.LambdaCheck.setGeometry(QtCore.QRect(60, 170, 111, 17))
+        self.LambdaCheck.setObjectName("LambdaCheck")
 
         self.browse_button.clicked.connect(self.get_directory_name)
         self.run.clicked.connect(self.run_program)
@@ -80,6 +84,7 @@ class Ui_Dialog(object):
         self.label_5.setText(_translate("Dialog", "Where do you wish to save the CSV files:"))
         self.browse_button.setText(_translate("Dialog", "Browse"))
         self.run.setText(_translate("Dialog", "Run"))
+        self.LambdaCheck.setText(_translate("Dialog", "Lambda Functions"))
 
         if os.path.exists("creds.tmp"):
             with open("creds.tmp", "r", encoding="utf-8") as f:
@@ -98,6 +103,7 @@ class Ui_Dialog(object):
         ec2_checked = self.EC2check.isChecked()
         s3_checked = self.S3check.isChecked()
         rds_checked = self.RDScheck.isChecked()
+        lambda_checked = self.LambdaCheck.isChecked()
 
         if not (access_key_id and secret_key and account_id and folder_name):
             message_box = QtWidgets.QMessageBox()
@@ -127,7 +133,7 @@ class Ui_Dialog(object):
             f.write(account_id + "\n")
             f.write(folder_name + "\n")
 
-        if not (ec2_checked or s3_checked or rds_checked):
+        if not (ec2_checked or s3_checked or rds_checked or lambda_checked):
             message_box = QtWidgets.QMessageBox()
             message_box.setIcon(QtWidgets.QMessageBox.Warning)
             message_box.setText("Please select at least one AWS service.")
@@ -182,6 +188,20 @@ class Ui_Dialog(object):
                 message_box.setWindowTitle("Error")
                 message_box.exec_()
 
+        if lambda_checked:
+            try:
+                LambdaScript.main(access_key_id, secret_access_key=secret_key, path=folder_name)
+                message_box = QtWidgets.QMessageBox()
+                message_box.setIcon(QtWidgets.QMessageBox.Information)
+                message_box.setWindowTitle("Success!")
+                message_box.setText("Lambda functions assessed successfully.")
+                message_box.exec_()
+            except:
+                message_box = QtWidgets.QMessageBox()
+                message_box.setIcon(QtWidgets.QMessageBox.Warning)
+                message_box.setText("An error occurred while assessing Lambda functions.\nPlease confirm that the access key and secret key are correct and try again.")
+                message_box.setWindowTitle("Error")
+                message_box.exec_()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
